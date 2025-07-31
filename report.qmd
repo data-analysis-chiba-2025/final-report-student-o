@@ -1,0 +1,91 @@
+---
+title: "The relationship between NHL players and their birth months"
+author: Student O
+format: docx
+---
+
+```{r}
+#| label: setup
+#| echo: false
+#| message: false
+#| warning: false
+# Load packages
+library(tidyverse)
+library(lubridate)
+library(scales)
+canada_births_1991_2022 <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2024/2024-01-09/canada_births_1991_2022.csv')
+nhl_player_births <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2024/2024-01-09/nhl_player_births.csv')
+nhl_rosters <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2024/2024-01-09/nhl_rosters.csv')
+nhl_teams <- readr::read_csv('https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2024/2024-01-09/nhl_teams.csv')
+
+
+```
+
+## Introduction
+
+The "Canadian Hockey Player Birth Months" dataset includes the average birth month of Canadians, the birth month of NHL players, and the NHL roster. The original data come from Statistics Canada, the NHL team list endpoint, and the NHL API.(https://universeodon.com/@jlaw/111522860812359901)
+
+Junior hockey players are often born in the first quarter of the year, as they tend to acquire skills faster than other children.
+
+Here, we analyze the gapminder dataset to answer the following questions:
+
+-Are most Canadian-born players in the current NHL early bloomers?
+-What is the relationship between NHL players' nationality and month of birth?
+
+
+## Data visualization
+
+```{r}
+#| echo: false
+# カナダ出身選手に絞り、誕生月ごとの人数を集計
+nhl_by_month <- nhl_player_births |> 
+  filter(birth_country == "CAN") |> 
+  group_by(birth_month) |> 
+  summarise(players = n()) |> 
+  mutate(month = factor(month.name[birth_month], levels = month.name))
+
+# グラフの作成　図1
+ggplot(nhl_by_month, aes(x = month, y = players)) +
+  geom_col(fill = "steelblue") +
+  labs(title = "Birth month distribution of NHL players from Canada",
+       x = "month",
+       y = "number of players") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# カナダ以外の出身選手に絞り、誕生月ごとの人数を集計　
+nhl_non_canada <- nhl_player_births |> 
+  filter(birth_country != "CAN") |> 
+  group_by(birth_month) |> 
+  summarise(players = n()) |> 
+  mutate(month = factor(month.name[birth_month], levels = month.name))
+```
+
+{{< pagebreak >}}
+
+```{r}
+#| echo: false
+# グラフの作成　図2
+ggplot(nhl_non_canada, aes(x = month, y = players)) +
+  geom_col(fill = "darkorange") +
+  labs(title = "Birth month distribution of NHL players outside Canada",
+       x = "month",
+       y = "number of players") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Discussion
+
+Figure 1 shows that the most common birth month for Canadian players is January, with a downward trend toward December.
+Furthermore, Figure 1 shows that there are more births from January to May, with 50 to 100 fewer births after June.
+
+Figure 2 shows that, as in Figure 1, most players from countries other than Canada were born between January and March, but the downward trend is weaker than in Figure 1.
+
+These results indicate that the birth month trends among young Canadian players are reflected in the trends among professional NHL players. 
+
+Furthermore, since many NHL players from other countries were also born between January and March, it can be assumed that, globally, ice hockey players born in the first half of the year are more likely to become professional players.
+
+## References
+
+- Are Birth Dates Still Destiny for Canadian NHL Players?　viewing date 2025/07/30
